@@ -11,7 +11,7 @@ class Beverage:
     def __init__(self, name, ingredients):
         self.name = ""
         self.ingredients = []
-        self.makingTime = 2  # assuming all take 1 sec as mentioned in problem statement
+        self.makingTime = 2  # assuming all take 2 sec as mentioned in problem statement
         self.set_name(name)
         self.set_ingredients(ingredients)
         self.running = False
