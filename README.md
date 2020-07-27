@@ -7,7 +7,9 @@ cmd:: coffeeMachine> python main.py
 Output:
 
 
-    request for hot_tea made0 outlet assigned to hot_tea
+    request for hot_tea made
+    
+    0 outlet assigned to hot_tea
 
     request for hot_coffee made
 
