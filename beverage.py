@@ -26,7 +26,7 @@ class Beverage:
     def make_beverage(self):
         time.sleep(self.makingTime)
         print("{} is prepared ".format(self.name))
-        # after thread is done,  create a new one for that beverage
+        
 
 
 
