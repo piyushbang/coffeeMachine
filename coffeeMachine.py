@@ -3,10 +3,18 @@
     And to make a beverage.
 
     Make beverage checks all cases of available resources and return appropriate comments if not.
-    If all it good, it runs a thread for corresponding beverage and after completion show prepared beverage.
+    it runs a thread for corresponding outlet and after completion show prepared beverage.
+
+    When a request is made first a empty outlet is searched, it is assigned.
+    if all resources are met, make bevrage req is made by assigning a outlet an a thread.
+
+    if not, no make beverage function (with delay) is called.
+
+    The thread is freed after completion of make_beverage function by a boolean variable made false.
 
 '''
 import beverage
+import threading
 
 
 class CoffeeMachine:
@@ -15,12 +23,15 @@ class CoffeeMachine:
         self.ingredients = {}
         self.beverages = {}
         self.debug = False
+        self.outletInUse = []
 
     def set_debug_mode(self, flag):
         self.debug = flag
 
     def set_outlets(self, n):
         self.outlets = n
+        for i in range(n):
+            self.outletInUse.append(False)
 
     def add_ingredients(self, ingredients):
         self.ingredients = ingredients
@@ -55,6 +66,12 @@ class CoffeeMachine:
                 return False
         return True
 
+    def __check_free_outlet(self):
+        for i in range(len(self.outletInUse)):
+            if not self.outletInUse[i]:
+                return i
+        return -1
+
     def __find_missing(self, beverage_name):
         _beverage = self.beverages[beverage_name]
         less_quantity = []
@@ -71,19 +88,25 @@ class CoffeeMachine:
         for items in _beverage.ingredients:
             self.ingredients[items[0]] = self.ingredients[items[0]] - items[1]
 
+    def __assign_outlet(self, index, beverage_name):
+        self.outletInUse[index] = True
+        thread = threading.Thread(target=self.__make_beverage, args=(beverage_name, index))
+        thread.start()
+
     def make_beverage(self, beverage_name):
         if self.debug:
             print("request for {} made".format(beverage_name))
+
         if beverage_name in self.beverages:
             if self.__check_quantity(beverage_name):
-                if not self.beverages[beverage_name].running:
-                    if self.debug:
-                        print("Making {} in process, wait 2 sec after req".format(beverage_name))
-                    self.__take_ingredient(beverage_name)
-                    self.beverages[beverage_name].thread.start()
+                self.__take_ingredient(beverage_name)
+                index_outlet = self.__check_free_outlet()
+                if index_outlet >= 0:
+                    print("{} outlet assigned to {}".format(index_outlet, beverage_name))
+                    self.outletInUse[index_outlet] = True
+                    self.__assign_outlet(index_outlet, beverage_name)
                 else:
-                    print("Already making {}, wait some time!".format(beverage_name))
-
+                    print("All outlet busy")
             else:
                 missing, less_quantity = self.__find_missing(beverage_name)
                 print("{} cannot be made as ".format(beverage_name), end = '')
@@ -94,3 +117,9 @@ class CoffeeMachine:
 
         else:
             print("I can't make it!, add beverage and its ingredients first!")
+
+    def __make_beverage(self, beverage_name, index):
+        self.beverages[beverage_name].make_beverage()
+        self.outletInUse[index] = False
+        if self.debug:
+            print("{} outlet freed from {}".format(index, beverage_name))
